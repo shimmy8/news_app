@@ -148,7 +148,7 @@ class StartParsingView(web.View):
                 'parser', PARSER_PORT, loop=self.request.app.loop)
             writer.write('parse'.encode())
             writer.close()
-            context['message'] = 'Parsing started '+ last_update_request.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            context['message'] = 'Parsing started '
             await self._add_parsing_request_date()
         else:
             context['message'] = 'Too often... Please, wait for ' + \
