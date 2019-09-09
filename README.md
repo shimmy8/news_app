@@ -7,9 +7,9 @@ Live demo: [http://hknewsapp.tk/](http://hknewsapp.tk/ "http://hknewsapp.tk/")
 ## API
 http://hknewsapp.tk/posts
 Takes 3 URL parameters:
-- offset - positive integer value
-- limit - positive integer below 150
-- order - comma-separated list of ordering values (title, url, _id)
+- offset - positive integer value. Default - 0.
+- limit - positive integer below 150. Default - 5.
+- order - comma-separated list of ordering values (title, created_at, _id). Default - created_at.
 
 ## Modules:
 - **parser** - collects data from [news.ycombinator.com](https://news.ycombinator.com/ "news.ycombinator.com");
