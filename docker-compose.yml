@@ -31,3 +31,15 @@ services:
             - .env
         volumes:
             - ./updater:/updater
+    api:
+        restart: always
+        build: ./api
+        command: "pipenv run python ./run.py"
+        depends_on:
+            - mongo
+        expose:
+          - ${API_PORT}
+        env_file:
+            - .env
+        volumes:
+            - ./api:/api
