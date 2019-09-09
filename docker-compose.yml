@@ -19,3 +19,15 @@ services:
             - ./etc/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
         expose:
             - ${MONGO_PORT}
+    updater:
+        restart: always
+        build: ./updater
+        command: "pipenv run python ./run.py"
+        expose:
+            - ${UPDATER_PORT}
+        depends_on:
+            - mongo
+        env_file:
+            - .env
+        volumes:
+            - ./updater:/updater
