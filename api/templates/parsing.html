@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body>
+        <h1>Welcome to posts DB!</h1>
+        <p>
+            {{ message }}
+        </p>
+        <p>
+            <i>Redirect to main page in </i><i id="ticker"></i> <i>seconds...</i>
+        </p>
+
+        <script type='text/javascript'>
+            function startTicker() {
+                let seconds = 5;
+                let ticker = document.getElementById('ticker');
+
+                setInterval(function(){
+                    if (seconds <= 0) window.location.href = '/';
+                    ticker.textContent = seconds;
+                    seconds--;
+                }, 1000);
+            }
+            startTicker();
+        </script>
+    </body>
+</html>

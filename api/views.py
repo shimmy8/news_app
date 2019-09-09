@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
+import asyncio
 import aiohttp_jinja2
+import os
 from aiohttp import web
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -23,7 +24,7 @@ class IndexView(web.View):
         client = AsyncIOMotorClient(MOTOR_URI)
         collection = client[DB_NAME][DB_COLLECTION]
 
-        latest_post = await collection.find_one(sort=[("created_at", -1)])
+        latest_post = await collection.find_one(sort=[('created_at', -1)])
         if latest_post and latest_post['created_at']:
             try:
                 last_update = datetime.strptime(latest_post['created_at'],
@@ -40,6 +41,7 @@ class IndexView(web.View):
         context = {
             'last_update': last_update or 'never made',
             'posts_url': self.request.app.router['posts'].url_for(),
+            'start_parsing_url': self.request.app.router['start_parsing'].url_for()
         }
         return aiohttp_jinja2.render_template('index.html', self.request, context)
 
@@ -108,3 +110,48 @@ class PostsView(web.View):
             item['_id'] = str_id
             data.append(item)
         return web.json_response(data)
+
+
+class StartParsingView(web.View):
+    """
+    Send soket message to parsing listener
+    """
+    seconds_delta = 60
+
+    async def _get_last_parsing_request_date(self):
+        client = AsyncIOMotorClient(MOTOR_URI)
+        collection = client[DB_NAME]['updates']
+
+        latest_request = await collection.find_one(sort=[('request_date', -1)])
+        if latest_request and latest_request['request_date']:
+            try:
+                request_date = datetime.strptime(latest_request['request_date'],
+                                                '%Y-%m-%dT%H:%M:%S.%f')
+            except ValueError:
+                request_date = None
+            return request_date
+
+    async def _add_parsing_request_date(self):
+        client = AsyncIOMotorClient(MOTOR_URI)
+        collection = client[DB_NAME]['updates']
+        return await collection.insert_one({'request_date': datetime.now().isoformat()})
+
+    async def post(self):
+        last_update_request = await self._get_last_parsing_request_date()
+        delta = self.seconds_delta
+        if last_update_request:
+            delta = (datetime.now() - last_update_request).seconds
+
+        context = {}
+        if delta >= self.seconds_delta:
+            reader, writer = await asyncio.open_connection(
+                'parser', PARSER_PORT, loop=self.request.app.loop)
+            writer.write('parse'.encode())
+            writer.close()
+            context['message'] = 'Parsing started '+ last_update_request.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            await self._add_parsing_request_date()
+        else:
+            context['message'] = 'Too often... Please, wait for ' + \
+                '{} seconds for new parsing request'.format(self.seconds_delta - delta)
+
+        return aiohttp_jinja2.render_template('parsing.html', self.request, context)

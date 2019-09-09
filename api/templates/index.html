@@ -11,5 +11,10 @@
         <p>
             Last update: <b>{{ last_update }}</b>
         </p>
+        <div>
+            <form method="POST" action="{{ start_parsing_url }}">
+                <button type="submit">Update!</button>
+            </form>
+        </div>
     </body>
 </html>
