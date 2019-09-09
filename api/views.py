@@ -7,10 +7,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 
 PARSER_PORT = int(os.getenv('PARSER_PORT', 1111))
-DB_NAME = os.getenv('MONGO_INITDB_DATABASE')
-DB_COLLECTION = os.getenv('MONGO_COLLECTION')
+DB_NAME = os.getenv('MONGO_INITDB_DATABASE', 'news_app')
+DB_COLLECTION = os.getenv('MONGO_COLLECTION', 'posts')
 MOTOR_URI = 'mongodb://mongo:{port}/'.format(
-    port=os.getenv('MONGO_PORT')
+    port=os.getenv('MONGO_PORT', 27017)
 )
 
 
@@ -39,6 +39,72 @@ class IndexView(web.View):
             last_update = last_update.strftime('%Y-%m-%d %H:%M:%S UTC')
         context = {
             'last_update': last_update or 'never made',
-            'start_parsing_url': self.request.app.router['start_parsing'].url_for()
+            'posts_url': self.request.app.router['posts'].url_for(),
         }
         return aiohttp_jinja2.render_template('index.html', self.request, context)
+
+
+class PostsView(web.View):
+    """
+    Display JSON posts list
+    """
+    allowed_query_keys = ('offset', 'limit', 'order')
+    order_keys = ('_id', 'title', 'created_at')
+
+    offset = 0
+    limit = 5
+    max_limit = 150
+    order = ['created_at']
+
+    def inspect_quey_params(self, query):
+        self._query_errors = []
+        for key in iter(query):
+            if key in self.allowed_query_keys:
+                if key in ['offset', 'limit']:
+                    try:
+                        value = int(query.get(key))
+                    except ValueError:
+                        self._query_errors.append(
+                            'Wrong {} value. Must be positive integer'.format(key)
+                        )
+                    else:
+                        if value < 0:
+                            self._query_errors.append(
+                                'Wrong {} value. Must be positive integer'.format(key)
+                            )
+                        elif key == 'limit' and value > self.max_limit:
+                             self._query_errors.append(
+                                 'Limit too big. {} maximim allowed.'.format(self.max_limit)
+                             )
+                        else:
+                            setattr(self, key, value)
+                elif key == 'order':
+                    values = query.get(key).split(',')
+                    for value in values:
+                        if value in self.order_keys or value.lstrip('-') in self.order_keys:
+                            if not value in self.order:
+                                self.order.append(value)
+                        else:
+                            self._query_errors.append(
+                                'Wrong order value. Only {} allowed'.format(
+                                    ', '.join(self.order_keys))
+                            )
+            else:
+                self._query_errors.append('Unknown query param {}'.format(key))
+
+    async def get(self):
+        query = self.request.query
+        self.inspect_quey_params(query)
+        if self._query_errors:
+            return web.Response(text='\n'.join(self._query_errors), status=400)
+
+        client = AsyncIOMotorClient(MOTOR_URI)
+        collection = client[DB_NAME][DB_COLLECTION]
+
+        data = []
+        sort = [(key.lstrip('-'), -1 if key.startswith('-') else 1) for key in self.order]
+        async for item in collection.find(sort=sort, skip=self.offset, limit=self.limit):
+            str_id = str(item['_id'])
+            item['_id'] = str_id
+            data.append(item)
+        return web.json_response(data)

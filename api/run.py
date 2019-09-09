@@ -14,6 +14,7 @@ def run():
     app = web.Application()
 
     app.router.add_view('/', IndexView, name='index')
+    app.router.add_view('/posts', PostsView, name='posts')
 
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./templates/'))
 
