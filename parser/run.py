@@ -9,12 +9,12 @@ PARSER_PORT = int(os.getenv('PARSER_PORT', 1111))
 
 
 def run():
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket.bind(('', PARSER_PORT))
-    socket.listen()
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(('', PARSER_PORT))
+    server.listen()
 
     while True:
-        client, _ = socket.accept()
+        client, _ = server.accept()
         while True:
             data = client.recv(255).decode()
             if data:
