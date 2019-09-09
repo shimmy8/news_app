@@ -27,15 +27,15 @@ async def check_item(item):
     except Exception as e:
         logging.error('Exception while loading JSON item: {}'.format(e))
         return
-    valid = True
+    valid = False
     for key, value in loaded_item.items():
         if key in DATA_VALUES_TESTS:
             if value and not DATA_VALUES_TESTS[key].match(value):
                 logging.error('Value format mismatch: {} - {}'.format(key, value))
-                valid = False
+            else:
+                valid = True
         else:
             logging.error('Unknown item key: {}'.format(key))
-            valid = False
     if valid:
         return loaded_item
 
