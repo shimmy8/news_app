@@ -53,7 +53,7 @@ async def save_loaded_item(item):
     if found_item:
         return await collection.update_one(found_item, {'$set': item})
     else:
-        item['created_at'] = datetime.datetime.utcnow().isoformat()
+        item['created_at'] = datetime.datetime.now().isoformat()
         return await collection.insert_one(item)
 
 
