@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+    parser:
+        restart: always
+        build: ./parser
+        command: "pipenv run python ./run.py"
+        expose:
+            - ${PARSER_PORT}
+        env_file:
+            - .env
+        volumes:
+            - ./parser:/parser

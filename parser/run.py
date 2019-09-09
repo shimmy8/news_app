@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
 import socket
 
 from parser import parse
 
 
+PARSER_PORT = int(os.getenv('PARSER_PORT', 1111))
+
 socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socket.bind(('', 1111))
+socket.bind(('', PARSER_PORT))
 socket.listen()
 
 while True:
