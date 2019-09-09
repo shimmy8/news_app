@@ -1,1 +1,1 @@
-# news_app
+# News APP

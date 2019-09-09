@@ -21,7 +21,7 @@ SAMPLE_DATA = """
 """.format(**TEST_ITEM)
 
 
-async def test_parser():
+def test_parser():
     loop = asyncio.get_event_loop()
 
     crawler = NewsCrawler(loop)

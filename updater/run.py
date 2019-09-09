@@ -13,7 +13,6 @@ DB_NAME = os.getenv('MONGO_INITDB_DATABASE')
 DB_PORT = os.getenv('MONGO_PORT')
 DB_COLLECTION = os.getenv('MONGO_COLLECTION')
 
-
 DATA_VALUES_TESTS = {
     'url': re.compile(r'http(s)?://(www\.)?[a-zA-Z-0-9-/\.\-\%\?\=&]+'),
     'title': re.compile(r'\w{1,}'),
