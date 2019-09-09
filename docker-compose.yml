@@ -43,3 +43,11 @@ services:
             - .env
         volumes:
             - ./api:/api
+    nginx:
+        image: nginx:latest
+        depends_on:
+            - api
+        ports:
+            - 80:80
+        volumes:
+          - ./etc/nginx.conf:/etc/nginx/conf.d/api.conf
