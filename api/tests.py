@@ -27,11 +27,15 @@ async def test_index(client):
 async def test_posts(client):
     fine_response = await client.get('/posts?offset=0&limit=5&order=-title')
     assert fine_response.status == 200
+
     response_text = await fine_response.text()
     assert isinstance(json.loads(response_text), list)
+
     offset_error_response = await client.get('/posts?offset=foo')
     assert offset_error_response.status == 400
+
     limit_error_response = await client.get('/posts?limit=999')
     assert limit_error_response.status == 400
+
     order_error_response = await client.get('/posts?order=foo')
     assert order_error_response.status == 400
