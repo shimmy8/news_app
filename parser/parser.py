@@ -51,7 +51,8 @@ class NewsCrawler:
 
 
 def parse():
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     crawler = NewsCrawler(loop)
     future = asyncio.Task(crawler.crawl())
