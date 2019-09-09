@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import aiohttp
+import json
 import logging
+import os
 from lxml import html
+
+
+UPDATER_PORT = int(os.getenv('UPDATER_PORT', 1112))
 
 
 class NewsCrawler:
@@ -50,6 +55,13 @@ class NewsCrawler:
         return results
 
 
+async def send_item(item, loop):
+    reader, writer = await asyncio.open_connection('updater', UPDATER_PORT, loop=loop)
+    message = json.dumps(item)
+    writer.write(message.encode())
+    writer.close()
+
+
 def parse():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -59,4 +71,6 @@ def parse():
 
     loop.run_until_complete(future)
 
+    for item in future.result():
+        loop.run_until_complete(send_item(item, loop))
     loop.close()
