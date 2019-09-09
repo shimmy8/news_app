@@ -9,6 +9,7 @@ verify_ssl = true
 aiohttp = "*"
 motor = "*"
 aiohttp-jinja2 = "*"
+pytest-aiohttp = "*"
 
 [requires]
 python_version = "3.7"
